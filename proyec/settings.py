@@ -30,6 +30,10 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
 ]
+CSRF_TRUSTED_ORIGINS = [
+    'https://mi-proyecto-django-409962820377.us-central1.run.app',
+]
+
 
 
 # Application definition
