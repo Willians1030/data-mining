@@ -14,7 +14,7 @@ RUN pip install -r requirements.txt
 COPY . .
 
 # Exponer el puerto 8000 (donde Django correrá el servidor)
-EXPOSE 8000
+EXPOSE 8080
 
 # Comando para correr el servidor de desarrollo de Django
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8080"]
