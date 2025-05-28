@@ -16,8 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.shortcuts import redirect
-from proyecto.views import main
-from proyecto.views import prediccion
+from proyec.views import main
+from proyec.views import prediccion
 
 def redirect_to_main(request):
     return redirect('/main/')

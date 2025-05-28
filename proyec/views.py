@@ -21,7 +21,7 @@ from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 # Ignorar Warning
 import warnings
 warnings.simplefilter('ignore')
-
+import os
 # -----------------------------------
 
 def main(request):
@@ -32,8 +32,10 @@ def main(request):
 def prediccion(request):
 
     # Se cargan los datos de entrada
-    data = pd.read_csv("C:/Users/Willians1030/Desktop/proyecto-ia-main/django_ml-main/proyecto/data/DatosValoraciones-Proyecto.csv", sep=';')
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    csv_path = os.path.join(base_dir, '..', 'data', 'DatosValoraciones-Proyecto.csv')
 
+    data = pd.read_csv(csv_path, sep=';')
     data.drop(['PersonaqueleAyuda', 'AsisteaRehabilitacion'], axis=1, inplace=True)
 
     # Se cambia género a valor numerico

@@ -49,13 +49,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'proyecto.urls'
+ROOT_URLCONF = 'proyec.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         # Cambiar la ruta del template
-        'DIRS': [BASE_DIR / 'proyecto' / 'templates'],  
+        'DIRS': [BASE_DIR / 'proyec' / 'templates'],  
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -68,7 +68,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'proyecto.wsgi.application'
+WSGI_APPLICATION = 'proyec.wsgi.application'
 
 
 # Database
