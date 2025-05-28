@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>.:: Modelo de Predicción ::.</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-section h3 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+        .model-buttons {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .chart-container {
+            margin: 20px 0;
+        }
+        .metrics-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        .metrics-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .metrics-box h5 {
+            color: #495057;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 8px;
+        }
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .metric-item:last-child {
+            border-bottom: none;
+        }
+        .metric-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        .metric-value {
+            color: #007bff;
+            font-weight: bold;
+        }
+        .model-description {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .model-description p {
+            margin: 0;
+            color: #1565c0;
+            font-style: italic;
+        }
+        hr {
+            border: none;
+            height: 2px;
+            background-color: #ddd;
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-section">
+            <form action="{% url 'prediccion' %}" method="post">
+                {% csrf_token %}
+                <h3>Aplicación Django - Modelos de Predicción de Discapacidad</h3>
+                <button type="submit" class="btn">Ejecutar Predicción</button>
+            </form>
+        </div>
+
+        {% if valores_reales %}
+        <hr>
+        
+        <div class="model-buttons">
+            <button id="btnModelo1" class="btn">Modelo 1: Discapacidad Global</button>
+            <button id="btnModelo2" class="btn btn-secondary">Modelo 2: Sordoceguera</button>
+        </div>
+
+        <div id="model-description" class="model-description">
+            <p>Este modelo predice el nivel de discapacidad global basándose en el nivel de discapacidad intelectual. Utiliza regresión lineal para establecer la relación entre estas dos variables en personas con discapacidad.</p>
+        </div>
+
+        <div class="chart-container">
+            <div id="grafico" style="width:100%; height:400px;"></div>
+        </div>
+
+        <div class="chart-container">
+            <div id="grafico-errores" style="width:100%; height:350px;"></div>
+        </div>
+
+        <div class="metrics-container">
+            <div class="metrics-box">
+                <h5>📊 Métricas del Modelo</h5>
+                <div class="metric-item">
+                    <span class="metric-label">R² Score:</span>
+                    <span class="metric-value" id="r2-value">{{ r2_modelo1 }}</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">MAE (Error Absoluto Medio):</span>
+                    <span class="metric-value" id="mae-value">{{ mae_modelo1 }}</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">MSE (Error Cuadrático Medio):</span>
+                    <span class="metric-value" id="mse-value">{{ mse_modelo1 }}</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">RMSE (Raíz del Error Cuadrático Medio):</span>
+                    <span class="metric-value" id="rmse-value">{{ rmse_modelo1 }}</span>
+                </div>
+            </div>
+            
+            <div class="metrics-box">
+                <h5>📈 Características de los Datos</h5>
+                <div class="metric-item">
+                    <span class="metric-label">Media (y real):</span>
+                    <span class="metric-value" id="media-value">{{ media_modelo1 }}</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Desviación Estándar:</span>
+                    <span class="metric-value" id="std-value">{{ std_modelo1 }}</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Máximo:</span>
+                    <span class="metric-value" id="max-value">{{ max_modelo1 }}</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Mínimo:</span>
+                    <span class="metric-value" id="min-value">{{ min_modelo1 }}</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Valores Únicos:</span>
+                    <span class="metric-value" id="unicos-value">{{ unicos_modelo1 }}</span>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div style="text-align: center; color: #666; padding: 40px;">
+            <p>Presiona "Ejecutar Predicción" para ver los resultados de los modelos de machine learning.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+
+    <script>
+        // Solo ejecutar JavaScript si hay datos disponibles
+        {% if valores_reales %}
+        const modelo1Data = {
+            reales: {{ valores_reales|safe }},
+            predichos: {{ valores_predichos|safe }},
+            errores: {{ errores_modelo1|safe }}
+        };
+
+        const modelo2Data = {
+            reales: {{ valores_reales_modelo2|safe }},
+            predichos: {{ valores_predichos_modelo2|safe }},
+            errores: {{ errores_modelo2|safe }}
+        };
+
+        // Métricas para cada modelo
+        const metricas = {
+            modelo1: {
+                r2: {{ r2_modelo1 }},
+                mae: {{ mae_modelo1 }},
+                mse: {{ mse_modelo1 }},
+                rmse: {{ rmse_modelo1 }},
+                media: {{ media_modelo1 }},
+                std: {{ std_modelo1 }},
+                max: {{ max_modelo1 }},
+                min: {{ min_modelo1 }},
+                unicos: {{ unicos_modelo1 }}
+            },
+            modelo2: {
+                r2: {{ r2_modelo2 }},
+                mae: {{ mae_modelo2 }},
+                mse: {{ mse_modelo2 }},
+                rmse: {{ rmse_modelo2 }},
+                media: {{ media_modelo2 }},
+                std: {{ std_modelo2 }},
+                max: {{ max_modelo2 }},
+                min: {{ min_modelo2 }},
+                unicos: {{ unicos_modelo2 }}
+            }
+        };
+
+        let chart = null;
+        let errorChart = null;
+        let currentModel = 1;
+
+        function renderChart(data, title, subtitle) {
+            if (chart) {
+                chart.destroy();
+            }
+
+            chart = Highcharts.chart('grafico', {
+                chart: {
+                    type: 'line'
+                },
+                title: {
+                    text: title
+                },
+                subtitle: {
+                    text: subtitle
+                },
+                xAxis: {
+                    categories: [...Array(data.reales.length).keys()],
+                    title: {
+                        text: 'Índice de Muestra'
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: 'Nivel de Discapacidad'
+                    },
+                    allowDecimals: true
+                },
+                legend: {
+                    layout: 'horizontal',
+                    align: 'center',
+                    verticalAlign: 'bottom'
+                },
+                series: [{
+                    name: 'Valores reales',
+                    data: data.reales,
+                    color: '#2f7ed8'
+                }, {
+                    name: 'Valores predichos',
+                    data: data.predichos,
+                    color: '#f45b5b'
+                }],
+                tooltip: {
+                    shared: true,
+                    crosshairs: true
+                }
+            });
+        }
+
+        function renderErrorChart(data, title) {
+            if (errorChart) {
+                errorChart.destroy();
+            }
+
+            errorChart = Highcharts.chart('grafico-errores', {
+                chart: {
+                    type: 'column'
+                },
+                title: {
+                    text: title
+                },
+                subtitle: {
+                    text: 'Errores absolutos por muestra'
+                },
+                xAxis: {
+                    categories: [...Array(data.errores.length).keys()],
+                    title: {
+                        text: 'Índice de Muestra'
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: 'Error Absoluto'
+                    },
+                    allowDecimals: true
+                },
+                legend: {
+                    enabled: false
+                },
+                series: [{
+                    name: 'Error Absoluto',
+                    data: data.errores,
+                    color: '#ff6b6b'
+                }],
+                tooltip: {
+                    pointFormat: 'Error: <b>{point.y:.3f}</b>'
+                }
+            });
+        }
+
+        function updateMetrics(modelo) {
+            const metric = metricas[modelo];
+            
+            // Actualizar métricas del modelo
+            document.getElementById('r2-value').textContent = metric.r2;
+            document.getElementById('mae-value').textContent = metric.mae;
+            document.getElementById('mse-value').textContent = metric.mse;
+            document.getElementById('rmse-value').textContent = metric.rmse;
+            
+            // Actualizar características
+            document.getElementById('media-value').textContent = metric.media;
+            document.getElementById('std-value').textContent = metric.std;
+            document.getElementById('max-value').textContent = metric.max;
+            document.getElementById('min-value').textContent = metric.min;
+            document.getElementById('unicos-value').textContent = metric.unicos;
+        }
+
+        function updateDescription(modelo) {
+            const description = document.getElementById('model-description');
+            if (modelo === 1) {
+                description.innerHTML = '<p>Este modelo predice el <strong>nivel de discapacidad global</strong> basándose en el nivel de discapacidad intelectual. Utiliza regresión lineal para establecer la relación entre estas dos variables en personas con discapacidad, permitiendo evaluar cómo la discapacidad intelectual influye en la discapacidad general.</p>';
+            } else {
+                description.innerHTML = '<p>Este modelo predice el <strong>nivel de sordoceguera</strong> basándose en el nivel de discapacidad intelectual. Utiliza regresión lineal para analizar la posible correlación entre discapacidad intelectual y sordoceguera, identificando patrones en esta relación específica.</p>';
+            }
+        }
+
+        function showModel1() {
+            currentModel = 1;
+            renderChart(
+                modelo1Data, 
+                'Regresión Lineal - Predicción de Discapacidad Global',
+                'Basado en Nivel de Discapacidad Intelectual'
+            );
+            renderErrorChart(
+                modelo1Data,
+                'Gráfica de Errores - Discapacidad Global'
+            );
+            updateMetrics('modelo1');
+            updateDescription(1);
+            
+            // Actualizar botones
+            const btn1 = document.getElementById('btnModelo1');
+            const btn2 = document.getElementById('btnModelo2');
+            if (btn1 && btn2) {
+                btn1.className = 'btn';
+                btn2.className = 'btn btn-secondary';
+            }
+        }
+
+        function showModel2() {
+            currentModel = 2;
+            renderChart(
+                modelo2Data, 
+                'Regresión Lineal - Predicción de Sordoceguera',
+                'Basado en Nivel de Discapacidad Intelectual'
+            );
+            renderErrorChart(
+                modelo2Data,
+                'Gráfica de Errores - Sordoceguera'
+            );
+            updateMetrics('modelo2');
+            updateDescription(2);
+            
+            // Actualizar botones
+            const btn1 = document.getElementById('btnModelo1');
+            const btn2 = document.getElementById('btnModelo2');
+            if (btn1 && btn2) {
+                btn1.className = 'btn btn-secondary';
+                btn2.className = 'btn';
+            }
+        }
+
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar que los elementos existan antes de usarlos
+            if (document.getElementById('grafico') && document.getElementById('grafico-errores')) {
+                showModel1();
+                
+                // Event listeners para los botones
+                const btn1 = document.getElementById('btnModelo1');
+                const btn2 = document.getElementById('btnModelo2');
+                
+                if (btn1) {
+                    btn1.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        showModel1();
+                    });
+                }
+                
+                if (btn2) {
+                    btn2.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        showModel2();
+                    });
+                }
+            }
+        });
+        {% endif %}
+    </script>
+</body>
+</html>
